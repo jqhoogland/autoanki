@@ -9,12 +9,11 @@ from typing import Dict, List, Optional, TypedDict
 
 import typer
 import yaml
-Path("..").absolute()
 
-# from autoanki.create_notes import create_notes
 from autoanki.snapshot import notes_from_csv, notes_to_csv
 from autoanki.types_ import Note, NoteType, Settings
 
+# from autoanki.create_notes import create_notes
 # from autoanki.upload_notes import upload_notes
 
 def create_notes(*args, **kwargs):
