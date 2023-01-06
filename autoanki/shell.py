@@ -60,7 +60,7 @@ def main(file: Path, note_type: NoteType = NoteType.BASIC, deck: str = "Default"
     if should_upload.lower() != "y":
         return
 
-    # notes = notes_from_csv(Path("notes.csv"), note_type=settings.note_type)
+    notes = notes_from_csv(Path("notes.csv"), note_type=settings.note_type)
     
     # Use AnkiConnect to upload the notes
     upload_notes(notes, deck=settings.deck)

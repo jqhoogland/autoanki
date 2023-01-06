@@ -14,13 +14,13 @@ def notes_to_csv(notes: List[Note], note_type: NoteType):
     """
     with open("notes.csv", "w") as notes_file:
         if note_type == NoteType.BASIC or note_type == NoteType.BASIC_AND_REVERSE:
-            notes_file.write("Front,Back,Tags")
+            notes_file.write("Front,Back,Tags\n")
             for note in notes:
-                notes_file.write(f"{note.fields['Front']},{note.fields['Back']},{','.join(note.tags)}")
+                notes_file.write(f"{note.fields['Front']},{note.fields['Back']},{','.join(note.tags)}\n")
         elif note_type == NoteType.CLOZE:
-            notes_file.write("Text,Tags")
+            notes_file.write("Text,Tags\n")
             for note in notes: 
-                notes_file.write(f"{note.fields['Text']},{','.join(note.tags)}")
+                notes_file.write(f"{note.fields['Text']},{','.join(note.tags)}\n")
 
 
 def notes_from_csv(file: Path, note_type: NoteType) -> List[Note]:
