@@ -10,9 +10,9 @@ from typing import Dict, List, Optional, TypedDict
 import typer
 import yaml
 
+from autoanki.create_notes import create_notes
 from autoanki.snapshot import notes_from_csv, notes_to_csv
 from autoanki.types_ import Note, NoteType, Settings
-from autoanki.create_notes import create_notes
 from autoanki.upload_notes import upload_notes
 
 
@@ -20,8 +20,11 @@ def load_settings(note_type: NoteType, deck: str, api_key: Optional[str] = None)
     """
     Loads the settings from the settings file.
     """
-    with open("settings.yaml") as settings_file:
-        settings = yaml.safe_load(settings_file)
+    try: 
+        with open("settings.yaml") as settings_file:
+            settings = yaml.safe_load(settings_file)
+    except FileNotFoundError:
+        settings = {}
 
     api_key = api_key or settings.get("api_key")
         
