@@ -12,17 +12,14 @@ import yaml
 
 from autoanki.snapshot import notes_from_csv, notes_to_csv
 from autoanki.types_ import Note, NoteType, Settings
-
 # from autoanki.create_notes import create_notes
-# from autoanki.upload_notes import upload_notes
+from autoanki.upload_notes import upload_notes
+
 
 def create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
     return [
         Note.create_basic("Question 1", "Answer 1"),
     ]
-
-def upload_notes(notes: List[Note], note_type: NoteType, deck: str, api_key: str):
-    return 
 
 def load_settings(note_type: NoteType, deck: str, api_key: Optional[str] = None) -> Settings:
     """
@@ -30,12 +27,14 @@ def load_settings(note_type: NoteType, deck: str, api_key: Optional[str] = None)
     """
     with open("settings.yaml") as settings_file:
         settings = yaml.safe_load(settings_file)
+
+    api_key = api_key or settings.get("api_key")
         
     if api_key is None:
-        api_key = typer.prompt("Please enter your AnkiConnect API Key")
+        api_key = typer.prompt("Please enter your OpenAI API Key")
 
     settings.update({
-        "note_type": note_type,
+        "note_type": note_type.value,
         "deck": deck,
         "api_key": api_key,
     })
@@ -58,11 +57,15 @@ def main(file: Path, note_type: NoteType = NoteType.BASIC, deck: str = "Default"
     
     # Give the user a chance to edit the notes before we upload them
     notes_to_csv(notes, note_type=settings.note_type)
-    typer.prompt("Press enter to upload to Anki")
+    should_upload = typer.prompt("Upload to Anki (y/n)?")
+
+    if should_upload.lower() != "y":
+        return
+
     notes = notes_from_csv(Path("notes.csv"), note_type=settings.note_type)
     
     # Use AnkiConnect to upload the notes
-    upload_notes(notes, note_type=settings.note_type, deck=settings.deck)
+    upload_notes(notes, deck=settings.deck)
 
 
 if __name__ == "__main__":

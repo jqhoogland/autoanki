@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, TypedDict
 
 
-class NoteType(enum.Enum):
+class NoteType(str, enum.Enum):
     BASIC = "Basic"
     CLOZE = "Cloze"
     BASIC_AND_REVERSE = "Basic (and reversed card)"
