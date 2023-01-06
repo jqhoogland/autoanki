@@ -18,7 +18,7 @@ from autoanki.upload_notes import upload_notes
 
 def create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
     return [
-        Note.create_basic("Question 1", "Answer 1"),
+        Note.create_basic("Question 2", "Answer 2"),
     ]
 
 def load_settings(note_type: NoteType, deck: str, api_key: Optional[str] = None) -> Settings:
@@ -62,7 +62,7 @@ def main(file: Path, note_type: NoteType = NoteType.BASIC, deck: str = "Default"
     if should_upload.lower() != "y":
         return
 
-    notes = notes_from_csv(Path("notes.csv"), note_type=settings.note_type)
+    # notes = notes_from_csv(Path("notes.csv"), note_type=settings.note_type)
     
     # Use AnkiConnect to upload the notes
     upload_notes(notes, deck=settings.deck)
