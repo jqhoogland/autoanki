@@ -16,11 +16,13 @@ from autoanki.types_ import Note, NoteType, Settings
 # from autoanki.create_notes import create_notes
 # from autoanki.upload_notes import upload_notes
 
-def create_notes(*args, **kwargs):
-    raise NotImplementedError
+def create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
+    return [
+        Note.create_basic("Question 1", "Answer 1"),
+    ]
 
-def upload_notes(*args, **kwargs):
-    raise NotImplementedError
+def upload_notes(notes: List[Note], note_type: NoteType, deck: str, api_key: str):
+    return 
 
 def load_settings(note_type: NoteType, deck: str, api_key: Optional[str] = None) -> Settings:
     """
@@ -49,10 +51,10 @@ def main(file: Path, note_type: NoteType = NoteType.BASIC, deck: str = "Default"
     TODO: Verbose option to print out each question/answer pair one at a time for feedback.
     """
     settings = load_settings(note_type, deck, api_key)
-    data = file.read_text()
+    text = file.read_text()
 
     # Use the OpenAI API to create the notes
-    notes = create_notes(data, note_type=settings.note_type, api_key=settings.api_key)
+    notes = create_notes(text, note_type=settings.note_type, api_key=settings.api_key)
     
     # Give the user a chance to edit the notes before we upload them
     notes_to_csv(notes, note_type=settings.note_type)
