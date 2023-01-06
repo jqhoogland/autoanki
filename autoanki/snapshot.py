@@ -5,12 +5,10 @@ Contains the shell script to run from the command line.
 from pathlib import Path
 from typing import List
 
-from autoanki.create_notes import create_notes
 from autoanki.types_ import Note, NoteType, Settings
-from autoanki.upload_notes import upload_notes
 
 
-def notes_to_csv(notes: List[NoteType], note_type: NoteType):
+def notes_to_csv(notes: List[Note], note_type: NoteType):
     """
     Writes the notes to a CSV file.
     """

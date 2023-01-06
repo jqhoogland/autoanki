@@ -1,6 +1,6 @@
 import enum
 from dataclasses import dataclass, field
-from typing import Dict, List, TypedDict
+from typing import Dict, List, Optional, TypedDict
 
 
 class NoteType(enum.Enum):
@@ -26,7 +26,7 @@ class Note:
     tags: List[str] = field(default_factory=list)
 
     @classmethod
-    def create_basic(cls, front: str, back: str, tags: List[str] = None) -> "Note":
+    def create_basic(cls, front: str, back: str, tags: Optional[List[str]] = None) -> "Note":
         return cls(
             type=NoteType.BASIC,
             fields={
@@ -37,7 +37,7 @@ class Note:
         )
 
     @classmethod
-    def create_cloze(cls, text: str, tags: List[str] = None) -> "Note":
+    def create_cloze(cls, text: str, tags: Optional[List[str]] = None) -> "Note":
         return cls(
             type=NoteType.CLOZE,
             fields={
@@ -47,7 +47,7 @@ class Note:
         )
 
     @classmethod
-    def create_basic_and_reverse(cls, front: str, back: str, tags: List[str] = None) -> "Note":
+    def create_basic_and_reverse(cls, front: str, back: str, tags: Optional[List[str]] = None) -> "Note":
         return cls(
             type=NoteType.BASIC_AND_REVERSE,
             fields={
@@ -56,3 +56,4 @@ class Note:
             },
             tags=tags or [],
         )
+        
