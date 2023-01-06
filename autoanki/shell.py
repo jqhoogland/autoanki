@@ -53,6 +53,10 @@ def main(file: Path, note_type: NoteType = NoteType.BASIC, deck: str = "Default"
     # Use the OpenAI API to create the notes
     notes = create_notes(text, note_type=settings.note_type, api_key=settings.api_key)
     
+    # Show the user the notes we created
+    for note in notes:
+        print(str(note))
+
     # Give the user a chance to edit the notes before we upload them
     notes_to_csv(notes, note_type=settings.note_type)
     should_upload = typer.prompt("Upload to Anki (y/n)?")

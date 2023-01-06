@@ -1,34 +1,72 @@
-from typing import List
+import re
+from typing import List, Tuple
 
-from autoanki.types_ import Note, NoteType
 import openai
 
-ELICIT_ANKI_MAP = {'Basic': 'Summarise this as a set of Anki flashcards.\n\n1) Q:',
-                   'Basic (and reversed card)': 'Summarise this as a set of Anki flashcards.\n\n1) Q:',
-                   'Cloze': 'Summarise and rewrite these notes as a set of fill in the blank flashcards.\n\n 1)'}
+from autoanki.types_ import Note, NoteType
 
+ELICIT_ANKI_MAP = {
+    'Basic': 'Summarise this as a set of Anki flashcards.'
+            '\n\n1) Q: What is the capital of Australia? A: Canberra.'
+            '\n\n2) Q:',
+    'Basic (and reversed card)': 'Summarise this as a set of Anki flashcards.'
+                                '\n\n1) Q: What is the capital of Australia? A: Canberra is the capital of what country?'
+                                '\n\n2) Q:',
+    'Cloze': 'Summarise and rewrite these notes as a set of fill in the blank flashcards.'
+            '\n\n1) Q: The capital of Australia is __________. A: Canberra'
+            '\n\n2) Q:'
+}
+
+
+def read_qa_pair(text: str) -> Tuple[str, str]:
+    """Splits a question of the kind "Q: ... A: ..." into a question and answer pair."""
+    
+    # Split the text into question and answer
+    question, answer = text.split("A:")
+
+    # Remove the "Q:" from the question
+    question = question[3:].strip()
+
+    # Remove the leading space from the answer
+    answer = answer[1:].strip()
+
+    return question, answer
+    
 
 def create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
     """Takes in notes (text), an api_key, and a note_type (basic, cloze, basic-reversed)
     Uses GPT-3 to return a set of question answer pairs to be turned into Anki cards."""
     openai.api_key = api_key
 
-    elicit_anki = ELICIT_ANKI_MAP['note_type']
+    elicit_anki = ELICIT_ANKI_MAP[note_type]
     prompt = f'BEGIN NOTES\n\n{text}\n\nEND NOTES\n\n{elicit_anki}'
+
     answer = openai.Completion.create(model='text-davinci-003', prompt=prompt, max_tokens=512, temperature=0.7)
-    answer_text = answer["choices"][0]["text"]
-    cards = answer_text.splitlines()
-    skip = 2 if note_type == "Cloze" else 5  # 1) vs. 1) Q:
-    cards = [card[skip:] for card in cards]
+    answer_text = "2) Q: " + answer["choices"][0]["text"]
+    
+    pattern = r"\b\d+\)"
+    note_texts = re.split(pattern, answer_text)[1:]
+
+    # Split the note_texts into question and answer pairs
+    qa_pairs = [
+        read_qa_pair(note_text) for note_text in note_texts
+    ]
+
     anki_cards = []
-    for i in range(0, len(cards), 2):
+
+    for qa_pair in qa_pairs:
+        q, a = qa_pair
+        
         if note_type == "Cloze":
-            underscore_index = cards[i].index('_')
-            answer = "{{c1::" + cards[i + 1] + '}}'
-            text = cards[i][:underscore_index] + answer + cards[underscore_index + 1:]
+            underscore_index = q.index('_')
+            answer = "{{c1::" + a + '}}'
+            text = q[:underscore_index] + answer + q[underscore_index + 1:]
             anki_cards.append(Note.create_cloze(text))
-        if note_type == "Basic":
-            anki_cards.append(Note.create_basic(cards[i], cards[i + 1]))
-        if note_type == "Basic (and reversed card)":
-            anki_cards.append(Note.create_basic_and_reverse(cards[i], cards[i + 1]))
+
+        elif note_type == "Basic":
+            anki_cards.append(Note.create_basic(q, a))
+
+        elif note_type == "Basic (and reversed card)":
+            anki_cards.append(Note.create_basic_and_reverse(q, a))
+
     return anki_cards

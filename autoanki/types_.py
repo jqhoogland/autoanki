@@ -57,3 +57,10 @@ class Note:
             tags=tags or [],
         )
         
+    def __str__(self) -> str:
+        if self.type == NoteType.BASIC:
+            return f"Basic: {self.fields['Front']} -> {self.fields['Back']}"
+        elif self.type == NoteType.CLOZE:
+            return f"Cloze: {self.fields['Text']}"
+        elif self.type == NoteType.BASIC_AND_REVERSE:
+            return f"Basic (and reversed card): {self.fields['Front']} <-> {self.fields['Back']}"
