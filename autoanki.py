@@ -10,8 +10,9 @@ from typing import Dict, List, Optional, TypedDict
 import typer
 import yaml
 
+from autoank.snapshot import notes_to_csv, notes_from_csv
 from autoanki.create_notes import create_notes
-from autoanki.types_ import NoteType, Settings
+from autoanki.types_ import NoteType, Settings, Note
 from autoanki.upload_notes import upload_notes
 
 
@@ -34,18 +35,7 @@ def load_settings(note_type: NoteType, deck: str, api_key: Optional[str] = None)
     with open("settings.yaml", "w") as settings_file:
         yaml.dump(settings, settings_file)
 
-    return settings
-
-
-def notes_to_csv(notes: List[], note_type: NoteType):
-    """
-    Writes the notes to a CSV file.
-    """
-    with open("notes.csv", "w") as notes_file:
-        if note_type == NoteType.BASIC:
-            notes_file.write("Front,Back,Tags")
-            for note in notes:
-                notes_file.write(f"{note.fields['Front']},{note.fields['Back']},{','.join(note.tags)}")
+    return Settings(**settings)
 
 
 def main(file: Path, note_type: NoteType = NoteType.BASIC, deck: str = "Default", api_key: Optional[str] = None):
@@ -56,20 +46,15 @@ def main(file: Path, note_type: NoteType = NoteType.BASIC, deck: str = "Default"
     data = file.read_text()
 
     # Use the OpenAI API to create the notes
-    notes = create_notes(data, note_type=settings["note_type"], api_key=settings["api_key"])
+    notes = create_notes(data, note_type=settings.note_type, api_key=settings.api_key)
     
     # Give the user a chance to edit the notes before we upload them
-    notes_to_csv(notes)
+    notes_to_csv(notes, note_type=settings.note_type)
     typer.prompt("Press enter to upload to Anki")
+    notes = notes_from_csv("notes.csv", note_type=settings.note_type)
     
     # Use AnkiConnect to upload the notes
-    upload_notes(notes, note_type=settings["note_type"], deck=settings["deck"])
-
-
-
-
-
-    
+    upload_notes(notes, note_type=settings.note_type, deck=settings.deck)
 
 
 if __name__ == "__main__":

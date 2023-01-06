@@ -9,11 +9,12 @@ class NoteType(enum.Enum):
     BASIC_AND_REVERSE = "Basic (and reversed card)"
 
 
-class Settings(TypedDict):
+@dataclass
+class Settings:
     note_type: NoteType
     deck: str
     api_key: str
-    
+
 @dataclass
 class Note:
     type: NoteType
