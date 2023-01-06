@@ -12,14 +12,9 @@ import yaml
 
 from autoanki.snapshot import notes_from_csv, notes_to_csv
 from autoanki.types_ import Note, NoteType, Settings
-# from autoanki.create_notes import create_notes
+from autoanki.create_notes import create_notes
 from autoanki.upload_notes import upload_notes
 
-
-def create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
-    return [
-        Note.create_basic("Question 2", "Answer 2"),
-    ]
 
 def load_settings(note_type: NoteType, deck: str, api_key: Optional[str] = None) -> Settings:
     """
