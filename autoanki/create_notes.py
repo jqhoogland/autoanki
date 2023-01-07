@@ -2,6 +2,7 @@ import re
 from typing import List, Tuple
 
 import openai
+import transformers
 
 from autoanki.types_ import Note, NoteType
 
@@ -33,13 +34,13 @@ def read_qa_pair(text: str) -> Tuple[str, str]:
     return question, answer
     
 
-def create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
+def _create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
     """Takes in notes (text), an api_key, and a note_type (basic, cloze, basic-reversed)
     Uses GPT-3 to return a set of question answer pairs to be turned into Anki cards."""
-    openai.api_key = api_key
-
     elicit_anki = ELICIT_ANKI_MAP[note_type]
     prompt = f'BEGIN NOTES\n\n{text}\n\nEND NOTES\n\n{elicit_anki}'
+
+    return []
 
     answer = openai.Completion.create(model='text-davinci-003', prompt=prompt, max_tokens=512, temperature=0.7)
     answer_text = "2) Q: " + answer["choices"][0]["text"]
@@ -70,3 +71,28 @@ def create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
             anki_cards.append(Note.create_basic_and_reverse(q, a))
 
     return anki_cards
+
+
+def create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
+    """Wrapper to make sure we can fit our text into GPT-3'ss 4097 token limit."""
+    openai.api_key = api_key
+
+    tokenizer = transformers.GPT2Tokenizer()
+    tokens = tokenizer.encode(text)
+
+    # Break into chunks of 2048 tokens
+    token_groups = [tokens[i:i+2048] for i in range(0, len(tokens), 2048)]
+
+    # Decode the chunks
+    chunks = [tokenizer.decode(token_group) for token_group in token_groups]
+
+    return [
+        note 
+        for chunk in chunks 
+        for note in _create_notes(chunk, note_type, api_key)
+    ]
+
+
+
+
+    
