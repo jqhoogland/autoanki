@@ -31,7 +31,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/jqhoogland/autoanki">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="images/banner.webp" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">AutoAnki</h3>
@@ -83,7 +83,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+![Product Name Screen Shot][product-screenshot]
 
 Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `jqhoogland`, `autoanki`, `hoogland_jesse`, `jesse-hoogland`, `gmail`, `email`, `autoanki`, `Generate Anki flashcards using LLMs`
 
