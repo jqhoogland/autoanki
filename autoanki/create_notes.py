@@ -36,6 +36,7 @@ def read_qa_pair(text: str) -> Tuple[str, str]:
         return question, answer
     except:
         warnings.warn(f"Failed on: {text}")
+        open("failed.txt", "a").write(text+"\n")
         return "", ""
     
 
@@ -80,22 +81,22 @@ def create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
     """Wrapper to make sure we can fit our text into GPT-3'ss 4097 token limit."""
     openai.api_key = api_key
 
-    # config = transformers.GPT2Config(n_positions=9999999)
-    # tokenizer = transformers.GPT2Tokenizer.from_pretrained('gpt2', config=config)
-    # tokens = tokenizer.encode(text)
+    config = transformers.GPT2Config(n_positions=9999999)
+    tokenizer = transformers.GPT2Tokenizer.from_pretrained('gpt2', config=config)
+    tokens = tokenizer.encode(text)
 
-    # # Break into chunks of 2048 tokens
-    # token_groups = [tokens[i:i+2048] for i in range(0, len(tokens), 2048)]
+    # Break into chunks of 2048 tokens
+    token_groups = [tokens[i:i+2048] for i in range(0, len(tokens), 2048)]
 
-    # # Decode the chunks
-    # chunks = [tokenizer.decode(token_group) for token_group in token_groups]
+    # Decode the chunks
+    chunks = [tokenizer.decode(token_group) for token_group in token_groups]
 
-    # return [
-    #     note 
-    #     for chunk in chunks 
-    #     for note in _create_notes(chunk, note_type, api_key)
-    # ]
-    return _create_notes(text, note_type, api_key)
+    return [
+        note 
+        for chunk in chunks 
+        for note in _create_notes(chunk, note_type, api_key)
+    ]
+    # return _create_notes(text, note_type, api_key)
 
 
 
