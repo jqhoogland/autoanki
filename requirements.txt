@@ -2,3 +2,4 @@ openai==0.14.0
 typer==0.7.0
 textract==1.6.1
 # PyPDF2
+PyPDF2==3.0.1

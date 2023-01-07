@@ -3,6 +3,7 @@ from typing import List, Tuple
 
 import openai
 import transformers
+import warnings
 
 from autoanki.types_ import Note, NoteType
 
@@ -22,16 +23,21 @@ ELICIT_ANKI_MAP = {
 def read_qa_pair(text: str) -> Tuple[str, str]:
     """Splits a question of the kind "Q: ... A: ..." into a question and answer pair."""
     
-    # Split the text into question and answer
-    question, answer = text.split("A:")
+    try:
+        # Split the text into question and answer
+        question, answer = text.split("A:")
 
-    # Remove the "Q:" from the question
-    question = question[3:].strip()
+        # Remove the "Q:" from the question
+        question = question[3:].strip()
 
-    # Remove the leading space from the answer
-    answer = answer[1:].strip()
+        # Remove the leading space from the answer
+        answer = answer[1:].strip()
 
-    return question, answer
+        return question, answer
+    except:
+        warnings.warn(f"Failed on: {text}")
+        open("failed.txt", "a").write(text+"\n")
+        return "", ""
     
 
 def _create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
@@ -39,8 +45,6 @@ def _create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
     Uses GPT-3 to return a set of question answer pairs to be turned into Anki cards."""
     elicit_anki = ELICIT_ANKI_MAP[note_type]
     prompt = f'BEGIN NOTES\n\n{text}\n\nEND NOTES\n\n{elicit_anki}'
-
-    return []
 
     answer = openai.Completion.create(model='text-davinci-003', prompt=prompt, max_tokens=512, temperature=0.7)
     answer_text = "2) Q: " + answer["choices"][0]["text"]
@@ -77,7 +81,8 @@ def create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
     """Wrapper to make sure we can fit our text into GPT-3'ss 4097 token limit."""
     openai.api_key = api_key
 
-    tokenizer = transformers.GPT2Tokenizer()
+    config = transformers.GPT2Config(n_positions=9999999)
+    tokenizer = transformers.GPT2Tokenizer.from_pretrained('gpt2', config=config)
     tokens = tokenizer.encode(text)
 
     # Break into chunks of 2048 tokens
@@ -91,6 +96,7 @@ def create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
         for chunk in chunks 
         for note in _create_notes(chunk, note_type, api_key)
     ]
+    # return _create_notes(text, note_type, api_key)
 
 
 
