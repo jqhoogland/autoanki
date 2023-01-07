@@ -4,7 +4,7 @@ Contains the shell script to run from the command line.
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, TypedDict
+from typing import Dict, Generator, List, Optional, TypedDict
 
 import typer
 import yaml
@@ -46,20 +46,49 @@ def load_settings(note_type: NoteType, deck: str, api_key: Optional[str] = None)
 PathOrURL = typer.Argument(..., help="Path to a file or URL to a webpage to create notes from")
 
 
+def prompt_note(note: Note) -> Note:
+    return Note(
+        type=note.type,
+        fields={
+            k: typer.prompt(k, default=v)
+            for k, v in note.fields.items()
+        },
+        tags=typer.prompt("Tags", default="").split(","),
+    )
 
-def main(file: str = PathOrURL, note_type: NoteType = NoteType.BASIC, deck: str = "Default", api_key: Optional[str] = None):
+
+def filter_and_edit_notes(notes: List[Note], interactive: bool) -> Generator[Note, None, None]:
+    for note in notes:
+        print("\n")
+        print(str(note))
+
+        if interactive:
+            should_add = typer.prompt("Do you want to add or edit this note? (y/n/e)", default="y")
+            
+            if should_add.lower() == "y":
+                yield note
+            elif should_add.lower() == "e":
+                yield prompt_note(note)
+
+        else:
+            yield note
+ 
+def main(
+    file: str = PathOrURL, 
+    note_type: NoteType = NoteType.BASIC, 
+    deck: str = "Default", 
+    api_key: Optional[str] = None,
+    interactive: bool = typer.Option(False, "--interactive", "-i", help="Whether to run the script interactively")
+):
     """
-    TODO: Verbose option to print out each question/answer pair one at a time for feedback.
+    Creates notes from a file or URL with the OpenAI API and uploads them to Anki. 
     """
     settings = load_settings(note_type, deck, api_key)
     text = get_text(file)
 
     # Use the OpenAI API to create the notes
-    notes = create_notes(text, note_type=settings.note_type, api_key=settings.api_key)
-    
-    # Show the user the notes we created
-    for note in notes:
-        print(str(note))
+    suggested_notes = create_notes(text, note_type=settings.note_type, api_key=settings.api_key)
+    notes = list(filter_and_edit_notes(suggested_notes, interactive))
 
     # Give the user a chance to edit the notes before we upload them
     notes_to_csv(notes, note_type=settings.note_type)
