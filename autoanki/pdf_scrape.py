@@ -22,16 +22,13 @@ def scrape_text_from_dir(dir_name):
     return total_text
 
 
-def scrape_text_from_arxiv(link):
-    web_file = urllib.request.urlopen(link)
-    local_file = open('temp.pdf', 'wb')
-    local_file.write(web_file.read())
-    web_file.close()
-    local_file.close()
+def scrape_text_from_arxiv(link: str):
+    with urllib.request.urlopen(link) as web_file:
+        with open('temp.pdf', 'wb') as local_file:
+            local_file.write(web_file.read())
+
     text = scrape_text_from_file("temp.pdf")
     os.remove("temp.pdf")
+
     return text
 
-if __name__ == "__main__":
-    with open("lol.txt", "w") as f:
-        f.write(scrape_text_from_arxiv("https://arxiv.org/pdf/2002.00269.pdf"))
