@@ -87,6 +87,10 @@
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+Anki is great, but creating notes can be time-consuming. AutoAnki uses GPT-3 to automatically generate flashcards from local files and urls. It uses [textract](https://textract.readthedocs.io/en/stable/) to extract text from PDFs, word documents, even images (through OCR), and other file types. We use the [OpenAI API](](https://openai.com/blog/openai-api/)) to generate notes from the text, and [AnkiConnect](https://ankiweb.net/shared/info/2055492159) to add the notes to your Anki deck.
+
+At first glance, this is a *bad idea* because creating notes is an important part of learning the material. So we recommend you use the `--interactive ` mode to manually filter/edit notes before importing them. This way, you can still benefit from the automatic generation of notes, with room for personalization.
+
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -115,6 +119,7 @@ To get a local copy up and running follow these simple example steps.
 5. Use the shell script
    ```js
    python autoanki/shell.py path/to/file.txt
+   python autoanki/shell.py https://example.com/file.txt
    ```
 
    Use `--help` for a list of arguments.

@@ -53,6 +53,7 @@ class Note:
             fields={
                 "Front": front,
                 "Back": back,
+
             },
             tags=tags or [],
         )
