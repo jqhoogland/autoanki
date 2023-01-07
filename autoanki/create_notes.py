@@ -1,9 +1,9 @@
 import re
+import warnings
 from typing import List, Tuple
 
 import openai
 import transformers
-import warnings
 
 from autoanki.types_ import Note, NoteType
 
@@ -23,21 +23,16 @@ ELICIT_ANKI_MAP = {
 def read_qa_pair(text: str) -> Tuple[str, str]:
     """Splits a question of the kind "Q: ... A: ..." into a question and answer pair."""
     
-    try:
-        # Split the text into question and answer
-        question, answer = text.split("A:")
+    # Split the text into question and answer
+    question, answer = text.split("A:")
 
-        # Remove the "Q:" from the question
-        question = question[3:].strip()
+    # Remove the "Q:" from the question
+    question = question[3:].strip()
 
-        # Remove the leading space from the answer
-        answer = answer[1:].strip()
+    # Remove the leading space from the answer
+    answer = answer[1:].strip()
 
-        return question, answer
-    except:
-        warnings.warn(f"Failed on: {text}")
-        open("failed.txt", "a").write(text+"\n")
-        return "", ""
+    return question, answer
     
 
 def _create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
@@ -49,13 +44,17 @@ def _create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
     answer = openai.Completion.create(model='text-davinci-003', prompt=prompt, max_tokens=512, temperature=0.7)
     answer_text = "2) Q: " + answer["choices"][0]["text"]
     
-    pattern = r"\b\d+\)"
+    pattern = r"\n\d+\)"
     note_texts = re.split(pattern, answer_text)[1:]
 
     # Split the note_texts into question and answer pairs
-    qa_pairs = [
-        read_qa_pair(note_text) for note_text in note_texts
-    ]
+    qa_pairs = []
+
+    for note_text in note_texts:
+        try:
+            qa_pairs.append(read_qa_pair(note_text))
+        except:
+            warnings.warn(f"Failed on: {note_text}")
 
     anki_cards = []
 
@@ -64,7 +63,7 @@ def _create_notes(text: str, note_type: NoteType, api_key: str) -> List[Note]:
         
         if note_type == "Cloze":
             underscore_index = q.index('_')
-            answer = "{{c1::" + a + '}}'
+            answer = "{{c1::" + a + "}}"
             text = q[:underscore_index] + answer + q[underscore_index + 1:]
             anki_cards.append(Note.create_cloze(text))
 

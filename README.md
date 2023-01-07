@@ -85,8 +85,6 @@
 
 ![Product Name Screen Shot][product-screenshot]
 
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `jqhoogland`, `autoanki`, `hoogland_jesse`, `jesse-hoogland`, `gmail`, `email`, `autoanki`, `Generate Anki flashcards using LLMs`
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -106,9 +104,15 @@ To get a local copy up and running follow these simple example steps.
    ```
 3. Install Python packages
    ```sh
+   # Install dependencies for textract
+   brew cask install xquartz
+   brew install poppler antiword unrtf tesseract swig
+
+   # Install other dependencies
    pip install -r requirements.txt
    ```
-4. Use the shell script
+4. Open Anki on your computer and make sure you have [AnkiConnect](https://ankiweb.net/shared/info/2055492159) installed.
+5. Use the shell script
    ```js
    python autoanki/shell.py path/to/file.txt
    ```
@@ -133,7 +137,7 @@ To get a local copy up and running follow these simple example steps.
 <!-- ROADMAP -->
 ## Roadmap
 
-TODO: Make it better.
+- [ ] Add `--interactive` flag to allow user to manually approve or reject suggested notes.
 
 See the [open issues](https://github.com/jqhoogland/autoanki/issues) for a full list of proposed features (and known issues).
 
@@ -171,7 +175,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@hoogland_jesse](https://twitter.com/hoogland_jesse) - jesse@jessehoogland.com
+Jesse Hoogland - [@hoogland_jesse](https://twitter.com/hoogland_jesse) - jesse@jessehoogland.com
 
 Project Link: [https://github.com/jqhoogland/autoanki](https://github.com/jqhoogland/autoanki)
 

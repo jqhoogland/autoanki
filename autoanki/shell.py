@@ -6,13 +6,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, TypedDict
 
-import requests
-# import textract
 import typer
 import yaml
 
 from autoanki.create_notes import create_notes
-from autoanki.pdf_scrape import scrape_text_from_arxiv, scrape_text_from_file
+from autoanki.scrape import get_text
 from autoanki.snapshot import notes_from_csv, notes_to_csv
 from autoanki.types_ import Note, NoteType, Settings
 from autoanki.upload_notes import upload_notes
@@ -48,34 +46,6 @@ def load_settings(note_type: NoteType, deck: str, api_key: Optional[str] = None)
 PathOrURL = typer.Argument(..., help="Path to a file or URL to a webpage to create notes from")
 
 
-def get_text(file: str) -> str:
-    """
-    Gets the text from the file or URL.
-    """
-    if "arxiv.org" in file:
-        if not file.endswith(".pdf"):
-            file = file.replace("abs", "pdf")
-            file += ".pdf"
-
-        print(file)
-        return scrape_text_from_arxiv(file)
-
-    if file.startswith("http"):
-        response = requests.get(file)
-        # filetype = response.headers["Content-Type"]
-        # filepath = Path(f"../data/{file.split('/')[-1]}")
-        # filepath.write_bytes(response.content)
-        return response.text
-    
-    filepath = Path(file)
-    
-    # PDFs are a special case
-    if str(filepath).endswith(".pdf"):
-        return scrape_text_from_file(filepath)
-    
-    # return textract.process(file)
-    return filepath.read_text()
-
 
 def main(file: str = PathOrURL, note_type: NoteType = NoteType.BASIC, deck: str = "Default", api_key: Optional[str] = None):
     """
@@ -93,7 +63,11 @@ def main(file: str = PathOrURL, note_type: NoteType = NoteType.BASIC, deck: str 
 
     # Give the user a chance to edit the notes before we upload them
     notes_to_csv(notes, note_type=settings.note_type)
-    should_upload = typer.prompt("Upload to Anki (y/n)?")
+    should_upload = typer.prompt(
+        "\n" + "-" * 80 + "\n" + "Do you want to upload these notes to Anki? (y/n)\n" +
+        "[You can edit the notes in notes.csv before uploading.]",
+        default="y"
+    )
 
     if should_upload.lower() != "y":
         return
