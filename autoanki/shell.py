@@ -2,11 +2,12 @@
 Contains the shell script to run from the command line.
 """
 
-import dataclasses
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, TypedDict
 
+import requests
+import textract
 import typer
 import yaml
 
@@ -43,12 +44,33 @@ def load_settings(note_type: NoteType, deck: str, api_key: Optional[str] = None)
     return Settings(**settings)
 
 
-def main(file: Path, note_type: NoteType = NoteType.BASIC, deck: str = "Default", api_key: Optional[str] = None):
+PathOrURL = typer.Argument(..., help="Path to a file or URL to a webpage to create notes from")
+
+
+def get_text(file: str) -> str:
+    """
+    Gets the text from the file or URL.
+    """
+    if "arxiv.org" in file:
+        if not file.endswith(".pdf"):
+            file.replace("abs", "pdf")
+            file += ".pdf"
+
+    if file.startswith("http"):
+        response = requests.get(file)
+        filetype = response.headers["Content-Type"]
+        filepath = Path(f"../data/{file.split('/')[-1]}")
+        filepath.write_bytes(response.content)
+    
+    return textract.process(file)
+
+
+def main(file: str = PathOrURL, note_type: NoteType = NoteType.BASIC, deck: str = "Default", api_key: Optional[str] = None):
     """
     TODO: Verbose option to print out each question/answer pair one at a time for feedback.
     """
     settings = load_settings(note_type, deck, api_key)
-    text = file.read_text()
+    text = get_text(file)
 
     # Use the OpenAI API to create the notes
     notes = create_notes(text, note_type=settings.note_type, api_key=settings.api_key)
